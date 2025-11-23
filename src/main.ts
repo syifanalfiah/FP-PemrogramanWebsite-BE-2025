@@ -13,7 +13,7 @@ import { ErrorHandler } from './common';
 dotenv.config({ quiet: true });
 
 const uploadPath = path.join(__dirname, '..', 'uploads');
-mkdir(uploadPath);
+mkdir(uploadPath, { recursive: true });
 
 const app = express();
 
