@@ -1,4 +1,5 @@
 import z from 'zod';
+
 import {
   fileSchema,
   StringToBooleanSchema,
@@ -16,9 +17,7 @@ export const CreateTypeSpeedSchema = z.object({
   thumbnail_image: fileSchema({}),
   is_publish_immediately: StringToBooleanSchema.default(false),
   time_limit: z.coerce.number().min(30).max(300),
-  texts: StringToObjectSchema(
-    z.array(TypeSpeedTextSchema).min(3).max(20)
-  ),
+  texts: StringToObjectSchema(z.array(TypeSpeedTextSchema).min(3).max(20)),
 });
 
 export type ICreateTypeSpeed = z.infer<typeof CreateTypeSpeedSchema>;

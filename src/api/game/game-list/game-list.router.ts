@@ -6,7 +6,6 @@ import { PairOrNoPairController } from './pair-or-no-pair/pair-or-no-pair.contro
 import { QuizController } from './quiz/quiz.controller';
 import { TypeSpeedController } from './type-speed/type-speed.controller';
 
-
 const GameListRouter = Router();
 
 GameListRouter.use('/quiz', QuizController);

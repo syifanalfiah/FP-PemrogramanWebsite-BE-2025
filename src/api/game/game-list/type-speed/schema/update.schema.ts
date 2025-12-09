@@ -1,4 +1,5 @@
 import z from 'zod';
+
 import {
   fileSchema,
   StringToBooleanSchema,
@@ -17,7 +18,7 @@ export const UpdateTypeSpeedSchema = z.object({
   is_publish: StringToBooleanSchema.optional(),
   time_limit: z.coerce.number().min(30).max(300).optional(),
   texts: StringToObjectSchema(
-    z.array(TypeSpeedTextSchema).min(3).max(20)
+    z.array(TypeSpeedTextSchema).min(3).max(20),
   ).optional(),
 });
 

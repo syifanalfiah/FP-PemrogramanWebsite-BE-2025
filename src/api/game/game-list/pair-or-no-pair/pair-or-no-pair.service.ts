@@ -10,7 +10,7 @@ import { type ICreatePairOrNoPair, type IUpdatePairOrNoPair } from './schema';
 
 export abstract class PairOrNoPairService {
   // eslint-disable-next-line @typescript-eslint/naming-convention
-  private static GAME_SLUG = 'pair-or-no-pair';
+  private static gameSlug = 'pair-or-no-pair';
 
   static async createGame(data: ICreatePairOrNoPair, user_id: string) {
     await this.existGameCheck(data.name);
@@ -73,7 +73,7 @@ export abstract class PairOrNoPairService {
       },
     });
 
-    if (!game || game.game_template.slug !== this.GAME_SLUG)
+    if (!game || game.game_template.slug !== this.gameSlug)
       throw new ErrorResponse(StatusCodes.NOT_FOUND, 'Game not found');
 
     if (user_role !== 'SUPER_ADMIN' && game.creator_id !== user_id)
@@ -114,7 +114,7 @@ export abstract class PairOrNoPairService {
     if (
       !game ||
       (is_public && !game.is_published) ||
-      game.game_template.slug !== this.GAME_SLUG
+      game.game_template.slug !== this.gameSlug
     )
       throw new ErrorResponse(StatusCodes.NOT_FOUND, 'Game not found');
 
@@ -165,7 +165,7 @@ export abstract class PairOrNoPairService {
       },
     });
 
-    if (!game || game.game_template.slug !== this.GAME_SLUG)
+    if (!game || game.game_template.slug !== this.gameSlug)
       throw new ErrorResponse(StatusCodes.NOT_FOUND, 'Game not found');
 
     if (user_role !== 'SUPER_ADMIN' && game.creator_id !== user_id)
@@ -279,7 +279,7 @@ export abstract class PairOrNoPairService {
 
   private static async getGameTemplateId() {
     const result = await prisma.gameTemplates.findUnique({
-      where: { slug: this.GAME_SLUG },
+      where: { slug: this.gameSlug },
       select: { id: true },
     });
 

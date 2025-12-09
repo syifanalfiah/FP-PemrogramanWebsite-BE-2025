@@ -3,13 +3,20 @@ import { StatusCodes } from 'http-status-codes';
 import { v4 } from 'uuid';
 
 import { ErrorResponse, prisma } from '@/common';
-import { type ITypeSpeedGameData } from '@/common/interface/games';
+import {
+  type ITypeSpeedGameData,
+  type ITypeSpeedResult,
+} from '@/common/interface/games';
 import { FileManager } from '@/utils';
 
-import { type ICreateTypeSpeed, type IUpdateTypeSpeed } from './schema';
+import {
+  type ICheckAnswer,
+  type ICreateTypeSpeed,
+  type IUpdateTypeSpeed,
+} from './schema';
 
 export abstract class TypeSpeedService {
-  private static GAME_SLUG = 'type-speed';
+  private static gameSlug = 'type-speed';
 
   static async createGame(data: ICreateTypeSpeed, user_id: string) {
     await this.existGameCheck(data.name);
@@ -73,7 +80,7 @@ export abstract class TypeSpeedService {
       },
     });
 
-    if (!game || game.game_template.slug !== this.GAME_SLUG)
+    if (!game || game.game_template.slug !== this.gameSlug)
       throw new ErrorResponse(StatusCodes.NOT_FOUND, 'Game not found');
 
     if (user_role !== 'SUPER_ADMIN' && game.creator_id !== user_id)
@@ -109,7 +116,7 @@ export abstract class TypeSpeedService {
       },
     });
 
-    if (!game || game.game_template.slug !== this.GAME_SLUG)
+    if (!game || game.game_template.slug !== this.gameSlug)
       throw new ErrorResponse(StatusCodes.NOT_FOUND, 'Game not found');
 
     if (user_role !== 'SUPER_ADMIN' && game.creator_id !== user_id)
@@ -224,7 +231,7 @@ export abstract class TypeSpeedService {
 
   private static async getGameTemplateId() {
     const result = await prisma.gameTemplates.findUnique({
-      where: { slug: this.GAME_SLUG },
+      where: { slug: this.gameSlug },
       select: { id: true },
     });
 
@@ -259,7 +266,7 @@ export abstract class TypeSpeedService {
     if (
       !game ||
       (is_public && !game.is_published) ||
-      game.game_template.slug !== this.GAME_SLUG
+      game.game_template.slug !== this.gameSlug
     )
       throw new ErrorResponse(StatusCodes.NOT_FOUND, 'Game not found');
 
@@ -279,9 +286,8 @@ export abstract class TypeSpeedService {
       throw new ErrorResponse(StatusCodes.NOT_FOUND, 'Game data not found');
 
     // Random pilih 1 text untuk dimainkan
-    const randomText = gameJson.texts[
-      Math.floor(Math.random() * gameJson.texts.length)
-    ];
+    const randomText =
+      gameJson.texts[Math.floor(Math.random() * gameJson.texts.length)];
 
     return {
       id: game.id,
@@ -309,34 +315,37 @@ export abstract class TypeSpeedService {
       },
     });
 
-    if (!game || game.game_template.slug !== this.GAME_SLUG)
+    if (!game || game.game_template.slug !== this.gameSlug)
       throw new ErrorResponse(StatusCodes.NOT_FOUND, 'Game not found');
 
     const gameJson = game.game_json as unknown as ITypeSpeedGameData;
     const text = gameJson.texts.find(t => t.id === data.text_id);
 
-    if (!text)
-      throw new ErrorResponse(StatusCodes.NOT_FOUND, 'Text not found');
+    if (!text) throw new ErrorResponse(StatusCodes.NOT_FOUND, 'Text not found');
 
     // Calculate metrics
     const originalText = text.content;
     const userInput = data.user_input;
-    
+
     const totalChars = originalText.length;
     let correctChars = 0;
-    
-    for (let i = 0; i < Math.min(originalText.length, userInput.length); i++) {
-      if (originalText[i] === userInput[i]) {
+
+    for (
+      let index = 0;
+      index < Math.min(originalText.length, userInput.length);
+      index++
+    ) {
+      if (originalText[index] === userInput[index]) {
         correctChars++;
       }
     }
 
     const incorrectChars = totalChars - correctChars;
     const accuracy = Math.round((correctChars / totalChars) * 100);
-    
+
     // WPM = (Characters Typed / 5) / (Time in Minutes)
     const timeInMinutes = data.time_taken / 60;
-    const wpm = Math.round((userInput.length / 5) / timeInMinutes);
+    const wpm = Math.round(userInput.length / 5 / timeInMinutes);
 
     const result: ITypeSpeedResult = {
       total_characters: totalChars,
